@@ -52,6 +52,15 @@ func UserSubscriptions(m models.Fetcher) http.HandlerFunc {
 			return
 		}
 		subscriptions, err := m.GetUserSubscriptions(userID)
+		if err == fmt.Errorf("no user with id: %s", userID) {
+			handleError(
+				w,
+				fmt.Errorf("error getting user subscriptions: %w", err),
+				http.StatusNotFound,
+				true,
+			)
+			return
+		}
 		if err != nil {
 			handleError(
 				w,

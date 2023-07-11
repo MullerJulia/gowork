@@ -7,7 +7,7 @@ func (s *Server) setupRoutes() {
 
 	// http://localhost:8081/get?id=1
 	s.Router.Get("/{id}", handler.UserSubscriptions(s.DB))
-	s.Router.Get("/", handler.Subscriptions(s.DB))
+	s.Router.Get("/subscriptions", handler.Subscriptions(s.DB))
 
 	s.Router.Post("/subscribe", handler.Subscribe(s.DB))
 	// TODO: route with url param without word "get" in url.

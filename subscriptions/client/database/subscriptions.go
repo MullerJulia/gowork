@@ -1,6 +1,9 @@
 package database
 
-import "main/models"
+import (
+	"fmt"
+	"main/models"
+)
 
 // GetSubscriptions gets a list of all subscriptions from the database
 func (c *Client) GetSubscriptions() (subscriptions []models.UserSubscription, err error) {
@@ -36,6 +39,9 @@ func (c *Client) GetUserSubscriptions(userID string) (subscriptions []models.Use
 			return nil, err
 		}
 		subscriptions = append(subscriptions, subscription)
+	}
+	if subscriptions == nil {
+		return subscriptions, fmt.Errorf("no user with id: %s", userID)
 	}
 	return subscriptions, err
 }
