@@ -8,7 +8,7 @@ import (
 func (c *Client) Subscribe(s models.UserSubscription) (subscriptionID string, err error) {
 	sqlStatementINSERT := "INSERT INTO subscriptions(user_id, subscription_id, status, charge_amount) VALUES ($1,$2,$3,$4) RETURNING subscription_id"
 
-	err = c.DB.QueryRow(sqlStatementINSERT, s.UserID, s.SubscriptionID, s.Status, s.ChargeAmount).Scan(&s.SubscriptionID)
+	err = c.DB.QueryRow(sqlStatementINSERT, s.UserID, s.SubscriptionID, s.Status, s.ChargeAmount).Scan(&subscriptionID)
 	if err != nil {
 		return subscriptionID, err
 	}
