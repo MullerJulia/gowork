@@ -7,7 +7,12 @@ import (
 )
 
 type Config struct {
-	Port string `conf:"default:8081"`
+	Port             string `conf:"default:8081"`
+	DatabaseUrl      string `conf:"default:localhost"`
+	DatabasePort     int    `conf:"default:5432"`
+	DatabaseUser     string `conf:"default:postgres"`
+	DatabasePassword string `conf:"default:postgres"`
+	DatabaseDb       string `conf:"default:subscriptions"`
 }
 
 func LoadConfig() (c Config, err error) {

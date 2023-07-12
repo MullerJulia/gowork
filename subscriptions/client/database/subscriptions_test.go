@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"main/config"
 	"main/models"
 	"testing"
 
@@ -106,7 +107,9 @@ func SetUp(t *testing.T, db *sql.DB, data any) {
 
 func DbHelper(t *testing.T) (*sql.DB, func() error) {
 	t.Helper()
-	db, err := sql.Open("postgres", ConnString())
+	config, err := config.LoadConfig()
+	require.NoError(t, err)
+	db, err := sql.Open("postgres", ConnString(&config))
 	require.NoError(t, err)
 
 	return db, db.Close

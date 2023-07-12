@@ -15,24 +15,16 @@ type Client struct {
 	DB *sql.DB
 }
 
-const (
-	DatabaseUrl      = "localhost"
-	DatabasePort     = 5432
-	DatabaseUser     = "postgres"
-	DatabasePassword = "postgres"
-	DatabaseDb       = "subscriptions"
-)
-
-func ConnString() string {
+func ConnString(config *config.Config) string {
 	return fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		DatabaseUrl, DatabasePort, DatabaseUser, DatabasePassword, DatabaseDb)
+		config.DatabaseUrl, config.DatabasePort, config.DatabaseUser, config.DatabasePassword, config.DatabaseDb)
 
 }
 
 // Init sets up a new database client.
 func (c *Client) Init(ctx context.Context, config *config.Config) error {
-	db, err := sql.Open("postgres", ConnString())
+	db, err := sql.Open("postgres", ConnString(config))
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
