@@ -6,9 +6,9 @@ main/client/database/database.go:29.2,30.12 2 0
 main/client/database/database.go:34.32,35.37 1 0
 main/client/database/database.go:35.37,37.3 1 0
 main/client/database/database.go:38.2,38.12 1 0
-main/client/database/subscribe.go:8.90,12.16 3 0
+main/client/database/subscribe.go:8.90,12.16 3 1
 main/client/database/subscribe.go:12.16,14.3 1 0
-main/client/database/subscribe.go:15.2,15.28 1 0
+main/client/database/subscribe.go:15.2,15.28 1 1
 main/client/database/subscriptions.go:9.90,11.16 2 1
 main/client/database/subscriptions.go:11.16,13.3 1 0
 main/client/database/subscriptions.go:14.2,16.18 2 1
