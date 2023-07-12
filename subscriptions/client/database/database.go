@@ -8,8 +8,6 @@ import (
 	"main/config"
 )
 
-// https://medium.com/gojekengineering/adding-a-database-to-a-go-web-application-b0e8e8b16fb9
-
 // Client holds the database client and prepared statements.
 type Client struct {
 	DB *sql.DB
@@ -39,5 +37,3 @@ func (c *Client) Close() error {
 	}
 	return nil
 }
-
-const active = "ACTIVE"
