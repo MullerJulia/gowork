@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"main/models"
 	"testing"
 
@@ -14,6 +15,7 @@ func TestSubscribe(t *testing.T) {
 		args           models.UserSubscription
 		subscriptionID string
 		err            error
+		ctx            context.Context
 	}{
 		{
 			name: "success",
@@ -23,8 +25,8 @@ func TestSubscribe(t *testing.T) {
 				ChargeAmount:   1,
 				Status:         "active",
 			},
-			subscriptionID: "1",
-			err:            nil,
+			err: nil,
+			ctx: context.Background(),
 		},
 	}
 
@@ -37,14 +39,23 @@ func TestSubscribe(t *testing.T) {
 
 	for _, tc := range test {
 		t.Run(tc.name, func(t *testing.T) {
-			sqlStatement := "INSERT INTO subscriptions(user_id, subscription_id, status, charge_amount) VALUES ($1,$2,$3,$4) RETURNING subscription_id"
-			err := db.QueryRow(sqlStatement, tc.args.UserID, tc.args.SubscriptionID, tc.args.Status, tc.args.ChargeAmount).Scan(&tc.subscriptionID)
+			s := Client{DB: db}
+			err := s.Subscribe(tc.ctx, tc.args)
 			require.NoError(t, err)
 
-			s := Client{DB: db}
-			dbSubscriptionID, err := s.Subscribe(tc.args)
-			assert.Equal(t, tc.subscriptionID, dbSubscriptionID)
+			sqlStatement := "SELECT user_id, subscription_id, status, charge_amount FROM subscriptions WHERE user_id = $1"
+			rows, err := db.Query(sqlStatement, tc.args.UserID)
 			require.NoError(t, err)
+			defer rows.Close()
+
+			dbSubscriptions := models.UserSubscription{}
+			for rows.Next() {
+				dbSubscription := models.UserSubscription{}
+				err := rows.Scan(&dbSubscription.UserID, &dbSubscription.SubscriptionID, &dbSubscription.Status, &dbSubscription.ChargeAmount)
+				require.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.args, dbSubscriptions)
 		})
 	}
 }

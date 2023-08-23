@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"main/models"
@@ -13,11 +14,11 @@ import (
 )
 
 type mockSubscriber struct {
-	subscribe func(payload models.UserSubscription) (string, error)
+	subscribe func(ctx context.Context, payload models.UserSubscription) error
 }
 
-func (m mockSubscriber) Subscribe(payload models.UserSubscription) (string, error) {
-	return m.subscribe(payload)
+func (m mockSubscriber) Subscribe(ctx context.Context, payload models.UserSubscription) error {
+	return m.subscribe(ctx, payload)
 }
 
 func TestSubscribe(t *testing.T) {
@@ -34,8 +35,8 @@ func TestSubscribe(t *testing.T) {
 			name: "success",
 			args: args{
 				subscriber: mockSubscriber{
-					subscribe: func(payload models.UserSubscription) (string, error) {
-						return "1", nil
+					subscribe: func(ctx context.Context, payload models.UserSubscription) error {
+						return nil
 					},
 				},
 				payload: models.UserSubscription{
@@ -51,8 +52,8 @@ func TestSubscribe(t *testing.T) {
 			name: "bad request, no user id",
 			args: args{
 				subscriber: mockSubscriber{
-					subscribe: func(payload models.UserSubscription) (string, error) {
-						return "1", nil
+					subscribe: func(ctx context.Context, payload models.UserSubscription) error {
+						return nil
 					},
 				},
 				payload: models.UserSubscription{

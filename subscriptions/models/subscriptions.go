@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -12,7 +13,7 @@ type Fetcher interface {
 
 // Subscriber is an interface for subscribing user.
 type Subscriber interface {
-	Subscribe(s UserSubscription) (string, error)
+	Subscribe(ctx context.Context, s UserSubscription) error
 }
 
 // UserSubscription contains information about a user's subscription.

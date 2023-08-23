@@ -18,6 +18,7 @@ import (
 
 func Subscribe(m models.Subscriber) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 
 		var payload models.UserSubscription
 		err := json.NewDecoder(r.Body).Decode(&payload)
@@ -42,7 +43,7 @@ func Subscribe(m models.Subscriber) http.HandlerFunc {
 			return
 		}
 
-		responseID, err := m.Subscribe(payload)
+		err = m.Subscribe(ctx, payload)
 		if err != nil {
 			handleError(
 				w,
@@ -52,7 +53,7 @@ func Subscribe(m models.Subscriber) http.HandlerFunc {
 			)
 			return
 		}
-		msg := fmt.Sprintf("User with ID: %s is signed up for subscription with ID: %s ", payload.UserID, responseID)
+		msg := fmt.Sprintf("User with ID: %s is signed up for subscription with ID: %s ", payload.UserID, payload.SubscriptionID)
 		response, _ := json.Marshal(msg)
 
 		w.WriteHeader(http.StatusOK)
