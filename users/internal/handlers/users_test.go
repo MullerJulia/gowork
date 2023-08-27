@@ -96,3 +96,79 @@ func TestUsers_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestUsers_GetOne(t *testing.T) {
+	type fields struct {
+		user UsersService
+	}
+	type args struct {
+		w *httptest.ResponseRecorder
+		r *http.Request
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantCode int
+		wantBody []byte
+	}{
+		{
+			name: "success",
+			fields: fields{
+				user: &UsersServiceMock{
+					GetOneFunc: func(ctx context.Context, id string) (models.User, error) {
+						assert.Equal(t, "1", id)
+						return models.User{Name: "name", ID: id}, nil
+					},
+				},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest(http.MethodGet, "/1", nil),
+			},
+			wantCode: http.StatusOK,
+			wantBody: []byte(`{"id":"1","name":"name"}` + "\n"),
+		},
+		{
+			name: "Internal Server Error",
+			fields: fields{
+				user: &UsersServiceMock{
+					GetOneFunc: func(ctx context.Context, id string) (models.User, error) {
+						return models.User{}, errors.New("error")
+					},
+				},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest(http.MethodGet, "/1", nil),
+			},
+			wantCode: http.StatusInternalServerError,
+			wantBody: []byte(`Internal Server Error` + "\n"),
+		},
+		{
+			name: "Not Found",
+			fields: fields{
+				user: &UsersServiceMock{
+					GetOneFunc: func(ctx context.Context, id string) (models.User, error) {
+						return models.User{}, models.NotFoundErr
+					},
+				},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest(http.MethodGet, "/1", nil),
+			},
+			wantCode: http.StatusNotFound,
+			wantBody: []byte(`Not Found` + "\n"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := NewUsers(tt.fields.user)
+			u.Routes().ServeHTTP(tt.args.w, tt.args.r)
+
+			assert.Equal(t, tt.wantCode, tt.args.w.Code)
+			assert.Equal(t, tt.wantBody, tt.args.w.Body.Bytes(), "unxpected body")
+		})
+	}
+}
