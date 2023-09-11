@@ -43,7 +43,12 @@ func (s Storage) GetByID(ctx context.Context, id string) (models.User, error) {
 }
 
 func (s Storage) UpdateUserName(ctx context.Context, user models.User) error {
-	_, err := s.db.ExecContext(ctx, "UPDATE users SET name=? WHERE id=?", user.Name, user.ID)
+	_, err := s.db.ExecContext(ctx, `
+			INSERT INTO users (id, name) VALUES ($1, $2) 
+			ON CONFLICT (id)
+			DO
+				UPDATE SET name=$2 WHERE users.id=$1`, user.ID, user.Name)
+
 	if err != nil {
 		return fmt.Errorf("failed to execute update: %w", err)
 	}
