@@ -10,6 +10,7 @@ import (
 type Repositry interface {
 	Create(ctx context.Context, name string) (models.User, error)
 	GetByID(ctx context.Context, id string) (models.User, error)
+	UpdateUserName(ctx context.Context, user models.User) error
 }
 
 type Service struct {
@@ -44,4 +45,17 @@ func (s Service) GetOne(ctx context.Context, id string) (models.User, error) {
 	}
 
 	return usr, nil
+}
+
+func (s Service) UpdateUserName(ctx context.Context, user models.User) error {
+	if user.ID == "" || user.Name == "" {
+		return fmt.Errorf("one of user's param is empty: %w", models.InvalidErr)
+	}
+
+	err := s.repo.UpdateUserName(ctx, user)
+	if err != nil {
+		return fmt.Errorf("failed to update user's name: %w", err)
+	}
+
+	return nil
 }
