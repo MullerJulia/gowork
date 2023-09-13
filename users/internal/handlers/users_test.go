@@ -75,9 +75,9 @@ func TestUsers_UpdateUserName(t *testing.T) {
 			name: "success",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserNameFunc: func(ctx context.Context, user models.User) error {
-						assert.Equal(t, "1", user.ID)
-						assert.Equal(t, "name", user.Name)
+					UpdateUserNameFunc: func(ctx context.Context, id, name string) error {
+						assert.Equal(t, "1", id)
+						assert.Equal(t, "name", name)
 						return nil
 					},
 				},
@@ -87,13 +87,13 @@ func TestUsers_UpdateUserName(t *testing.T) {
 				r: httptest.NewRequest(http.MethodPatch, "/1", strings.NewReader(`{"name": "name"}`)),
 			},
 			wantCode: http.StatusOK,
-			wantBody: []byte(`{"id":"1","name":"name"}` + "\n"),
+			wantBody: []byte(`{"name":"name"}` + "\n"),
 		},
 		{
 			name: "Internal Server Error",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserNameFunc: func(ctx context.Context, user models.User) error {
+					UpdateUserNameFunc: func(ctx context.Context, id, name string) error {
 						return errors.New("error")
 					},
 				},
@@ -109,7 +109,7 @@ func TestUsers_UpdateUserName(t *testing.T) {
 			name: "Not Found",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserNameFunc: func(ctx context.Context, user models.User) error {
+					UpdateUserNameFunc: func(ctx context.Context, id, name string) error {
 						return models.NotFoundErr
 					},
 				},
@@ -125,7 +125,7 @@ func TestUsers_UpdateUserName(t *testing.T) {
 			name: "Bad JSON",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserNameFunc: func(ctx context.Context, user models.User) error {
+					UpdateUserNameFunc: func(ctx context.Context, id, name string) error {
 						return errors.New("error")
 					},
 				},

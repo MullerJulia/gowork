@@ -12,8 +12,8 @@ import (
 	"github.com/mikenai/gowork/internal/models"
 )
 
-type UserParams struct {
-	Name string
+type CreateUserParams struct {
+	Name string `json:"name"`
 }
 
 //go:generate moq -rm -out users_mock.go . UsersService
@@ -21,7 +21,7 @@ type UserParams struct {
 type UsersService interface {
 	Create(ctx context.Context, name string) (models.User, error)
 	GetOne(ctx context.Context, id string) (models.User, error)
-	UpdateUserName(ctx context.Context, user models.User) error
+	UpdateUserName(ctx context.Context, id, name string) error
 }
 
 type Users struct {
@@ -46,7 +46,7 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)
 
-	var userParams UserParams
+	var userParams CreateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&userParams); err != nil {
 		log.Error().Err(err).Msg("failed to parse params")
 		response.InternalError(w)
@@ -94,19 +94,14 @@ func (u Users) UpdateUserName(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	id := chi.URLParam(r, "id")
 
-	var userData UserParams
+	var userData CreateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
 		log.Error().Err(err).Msg("failed to parse params")
 		response.InternalError(w)
 		return
 	}
 
-	user := models.User{
-		ID:   id,
-		Name: userData.Name,
-	}
-
-	err := u.user.UpdateUserName(ctx, user)
+	err := u.user.UpdateUserName(ctx, id, userData.Name)
 	if err != nil {
 		if errors.Is(err, models.NotFoundErr) {
 			response.NotFound(w)
@@ -117,7 +112,7 @@ func (u Users) UpdateUserName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := response.JSON(w, user); err != nil {
+	if err := response.JSON(w, userData); err != nil {
 		log.Error().Err(err).Msg("failed to encode response")
 	}
 }
