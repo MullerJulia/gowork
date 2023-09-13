@@ -13,7 +13,8 @@ func TestService_Create(t *testing.T) {
 		repo Repositry
 	}
 	type args struct {
-		name string
+		name        string
+		phoneNumber string
 	}
 	tests := []struct {
 		name    string
@@ -29,7 +30,7 @@ func TestService_Create(t *testing.T) {
 			s := Service{
 				repo: tt.fields.repo,
 			}
-			got, err := s.Create(context.Background(), tt.args.name)
+			got, err := s.Create(context.Background(), tt.args.name, tt.args.phoneNumber)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return

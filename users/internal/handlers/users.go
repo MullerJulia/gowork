@@ -13,14 +13,22 @@ import (
 )
 
 type CreateUserParams struct {
-	Name string
+	Name        string
+	PhoneNumber string
+}
+
+type UpdateUserParams struct {
+	ID          string
+	Name        string
+	PhoneNumber string
 }
 
 //go:generate moq -rm -out users_mock.go . UsersService
 //go:generate lol 12ed qwe qwe qw eqw e
 type UsersService interface {
-	Create(ctx context.Context, name string) (models.User, error)
+	Create(ctx context.Context, name, phoneNumber string) (models.User, error)
 	GetOne(ctx context.Context, id string) (models.User, error)
+	UpdateUser(ctx context.Context, id, name, phoneNumber string) (models.User, error)
 }
 
 type Users struct {
@@ -36,6 +44,7 @@ func (u Users) Routes() http.Handler {
 
 	r.Post("/", u.Create)
 	r.Get("/{id}", u.GetOne)
+	r.Put("/{id}", u.UpdateUser)
 
 	return r
 }
@@ -51,7 +60,7 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := u.user.Create(ctx, userParams.Name)
+	user, err := u.user.Create(ctx, userParams.Name, userParams.PhoneNumber)
 	if err != nil {
 		if errors.Is(err, models.UserCreateParamInvalidNameErr) {
 			response.BadRequest(w)
@@ -83,6 +92,34 @@ func (u Users) GetOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := response.JSON(w, usr); err != nil {
+		log.Error().Err(err).Msg("failed to encode response")
+	}
+}
+
+func (u Users) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := logger.FromContext(ctx)
+	id := chi.URLParam(r, "id")
+
+	var userData CreateUserParams
+	if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
+		log.Error().Err(err).Msg("failed to parse params")
+		response.InternalError(w)
+		return
+	}
+
+	user, err := u.user.UpdateUser(ctx, id, userData.Name, userData.PhoneNumber)
+	if err != nil {
+		if errors.Is(err, models.NotFoundErr) {
+			response.NotFound(w)
+			return
+		}
+		log.Error().Err(err).Msg("failed to get user")
+		response.InternalError(w)
+		return
+	}
+
+	if err := response.JSON(w, user); err != nil {
 		log.Error().Err(err).Msg("failed to encode response")
 	}
 }
