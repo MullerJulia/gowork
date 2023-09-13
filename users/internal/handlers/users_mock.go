@@ -25,6 +25,9 @@ var _ UsersService = &UsersServiceMock{}
 //			GetOneFunc: func(ctx context.Context, id string) (models.User, error) {
 //				panic("mock out the GetOne method")
 //			},
+//			UpdateUserNameFunc: func(ctx context.Context, id string, name string) error {
+//				panic("mock out the UpdateUserName method")
+//			},
 //		}
 //
 //		// use mockedUsersService in code that requires UsersService
@@ -37,6 +40,9 @@ type UsersServiceMock struct {
 
 	// GetOneFunc mocks the GetOne method.
 	GetOneFunc func(ctx context.Context, id string) (models.User, error)
+
+	// UpdateUserNameFunc mocks the UpdateUserName method.
+	UpdateUserNameFunc func(ctx context.Context, id string, name string) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -54,9 +60,19 @@ type UsersServiceMock struct {
 			// ID is the id argument value.
 			ID string
 		}
+		// UpdateUserName holds details about calls to the UpdateUserName method.
+		UpdateUserName []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ID is the id argument value.
+			ID string
+			// Name is the name argument value.
+			Name string
+		}
 	}
-	lockCreate sync.RWMutex
-	lockGetOne sync.RWMutex
+	lockCreate         sync.RWMutex
+	lockGetOne         sync.RWMutex
+	lockUpdateUserName sync.RWMutex
 }
 
 // Create calls CreateFunc.
@@ -128,5 +144,45 @@ func (mock *UsersServiceMock) GetOneCalls() []struct {
 	mock.lockGetOne.RLock()
 	calls = mock.calls.GetOne
 	mock.lockGetOne.RUnlock()
+	return calls
+}
+
+// UpdateUserName calls UpdateUserNameFunc.
+func (mock *UsersServiceMock) UpdateUserName(ctx context.Context, id string, name string) error {
+	if mock.UpdateUserNameFunc == nil {
+		panic("UsersServiceMock.UpdateUserNameFunc: method is nil but UsersService.UpdateUserName was just called")
+	}
+	callInfo := struct {
+		Ctx  context.Context
+		ID   string
+		Name string
+	}{
+		Ctx:  ctx,
+		ID:   id,
+		Name: name,
+	}
+	mock.lockUpdateUserName.Lock()
+	mock.calls.UpdateUserName = append(mock.calls.UpdateUserName, callInfo)
+	mock.lockUpdateUserName.Unlock()
+	return mock.UpdateUserNameFunc(ctx, id, name)
+}
+
+// UpdateUserNameCalls gets all the calls that were made to UpdateUserName.
+// Check the length with:
+//
+//	len(mockedUsersService.UpdateUserNameCalls())
+func (mock *UsersServiceMock) UpdateUserNameCalls() []struct {
+	Ctx  context.Context
+	ID   string
+	Name string
+} {
+	var calls []struct {
+		Ctx  context.Context
+		ID   string
+		Name string
+	}
+	mock.lockUpdateUserName.RLock()
+	calls = mock.calls.UpdateUserName
+	mock.lockUpdateUserName.RUnlock()
 	return calls
 }

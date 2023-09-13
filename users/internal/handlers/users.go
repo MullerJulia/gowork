@@ -13,7 +13,7 @@ import (
 )
 
 type CreateUserParams struct {
-	Name string
+	Name string `json:"name"`
 }
 
 //go:generate moq -rm -out users_mock.go . UsersService
@@ -21,6 +21,7 @@ type CreateUserParams struct {
 type UsersService interface {
 	Create(ctx context.Context, name string) (models.User, error)
 	GetOne(ctx context.Context, id string) (models.User, error)
+	UpdateUserName(ctx context.Context, id, name string) error
 }
 
 type Users struct {
@@ -36,6 +37,7 @@ func (u Users) Routes() http.Handler {
 
 	r.Post("/", u.Create)
 	r.Get("/{id}", u.GetOne)
+	r.Patch("/{id}", u.UpdateUserName)
 
 	return r
 }
@@ -83,6 +85,34 @@ func (u Users) GetOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := response.JSON(w, usr); err != nil {
+		log.Error().Err(err).Msg("failed to encode response")
+	}
+}
+
+func (u Users) UpdateUserName(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := logger.FromContext(ctx)
+	id := chi.URLParam(r, "id")
+
+	var userData CreateUserParams
+	if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
+		log.Error().Err(err).Msg("failed to parse params")
+		response.InternalError(w)
+		return
+	}
+
+	err := u.user.UpdateUserName(ctx, id, userData.Name)
+	if err != nil {
+		if errors.Is(err, models.NotFoundErr) {
+			response.NotFound(w)
+			return
+		}
+		log.Error().Err(err).Msg("failed to get user")
+		response.InternalError(w)
+		return
+	}
+
+	if err := response.JSON(w, userData); err != nil {
 		log.Error().Err(err).Msg("failed to encode response")
 	}
 }
