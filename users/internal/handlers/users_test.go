@@ -31,7 +31,7 @@ func TestUsers_Create(t *testing.T) {
 			name: "success",
 			fields: fields{
 				user: &UsersServiceMock{
-					CreateFunc: func(ctx context.Context, name string) (models.User, error) {
+					CreateFunc: func(ctx context.Context, name, phoneNumber string) (models.User, error) {
 						assert.Equal(t, "mike", name)
 						return models.User{Name: name, ID: "1"}, nil
 					},
@@ -75,11 +75,11 @@ func TestUsers_UpdateUser(t *testing.T) {
 			name: "success",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserFunc: func(ctx context.Context, user models.User) error {
-						assert.Equal(t, "1", user.ID)
-						assert.Equal(t, "name", user.Name)
-						assert.Equal(t, "123", user.PhoneNumber)
-						return nil
+					UpdateUserFunc: func(ctx context.Context, id, name, phoneNumber string) (models.User, error) {
+						assert.Equal(t, "1", id)
+						assert.Equal(t, "name", name)
+						assert.Equal(t, "123", phoneNumber)
+						return models.User{ID: id, Name: name, PhoneNumber: phoneNumber}, nil
 					},
 				},
 			},
@@ -94,8 +94,8 @@ func TestUsers_UpdateUser(t *testing.T) {
 			name: "Internal Server Error",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserFunc: func(ctx context.Context, user models.User) error {
-						return errors.New("error")
+					UpdateUserFunc: func(ctx context.Context, id, name, phoneNumber string) (models.User, error) {
+						return models.User{}, errors.New("error")
 					},
 				},
 			},
@@ -110,8 +110,8 @@ func TestUsers_UpdateUser(t *testing.T) {
 			name: "Not Found",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserFunc: func(ctx context.Context, user models.User) error {
-						return models.NotFoundErr
+					UpdateUserFunc: func(ctx context.Context, id, name, phoneNumber string) (models.User, error) {
+						return models.User{}, models.NotFoundErr
 					},
 				},
 			},
@@ -126,8 +126,8 @@ func TestUsers_UpdateUser(t *testing.T) {
 			name: "Bad JSON",
 			fields: fields{
 				user: &UsersServiceMock{
-					UpdateUserFunc: func(ctx context.Context, user models.User) error {
-						return errors.New("error")
+					UpdateUserFunc: func(ctx context.Context, id, name, phoneNumber string) (models.User, error) {
+						return models.User{}, errors.New("error")
 					},
 				},
 			},

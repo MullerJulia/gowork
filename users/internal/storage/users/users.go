@@ -18,13 +18,13 @@ func New(db *sql.DB) Storage {
 	return Storage{db: db}
 }
 
-func (s Storage) Create(ctx context.Context, name string) (models.User, error) {
+func (s Storage) Create(ctx context.Context, name, phoneNumber string) (models.User, error) {
 	id := uuid.NewString()
-	_, err := s.db.ExecContext(ctx, "INSERT INTO users (id, name) VALUES (?, ?)", id, name)
+	_, err := s.db.ExecContext(ctx, "INSERT INTO users (id, name, phone_number) VALUES (?, ?, ?)", id, name, phoneNumber)
 	if err != nil {
 		return models.User{}, fmt.Errorf("failed to execute insert: %w", err)
 	}
-	return models.User{ID: id, Name: name}, nil
+	return models.User{ID: id, Name: name, PhoneNumber: phoneNumber}, nil
 }
 
 func (s Storage) GetByID(ctx context.Context, id string) (models.User, error) {
@@ -40,4 +40,17 @@ func (s Storage) GetByID(ctx context.Context, id string) (models.User, error) {
 	}
 
 	return usr, nil
+}
+
+func (s Storage) UpdateUser(ctx context.Context, user models.User) error {
+	_, err := s.db.ExecContext(ctx, `
+			INSERT INTO users (id, name, phone_number) VALUES ($1, $2, $3) 
+			ON CONFLICT (id)
+			DO
+				UPDATE SET name=$2, phone_number=$3 WHERE users.id=$1`, user.ID, user.Name, user.PhoneNumber)
+
+	if err != nil {
+		return fmt.Errorf("failed to execute update: %w", err)
+	}
+	return nil
 }

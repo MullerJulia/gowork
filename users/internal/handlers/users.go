@@ -12,7 +12,13 @@ import (
 	"github.com/mikenai/gowork/internal/models"
 )
 
-type UserParams struct {
+type CreateUserParams struct {
+	Name        string
+	PhoneNumber string
+}
+
+type UpdateUserParams struct {
+	ID          string
 	Name        string
 	PhoneNumber string
 }
@@ -20,9 +26,9 @@ type UserParams struct {
 //go:generate moq -rm -out users_mock.go . UsersService
 //go:generate lol 12ed qwe qwe qw eqw e
 type UsersService interface {
-	Create(ctx context.Context, name string) (models.User, error)
+	Create(ctx context.Context, name, phoneNumber string) (models.User, error)
 	GetOne(ctx context.Context, id string) (models.User, error)
-	UpdateUser(ctx context.Context, user models.User) error
+	UpdateUser(ctx context.Context, id, name, phoneNumber string) (models.User, error)
 }
 
 type Users struct {
@@ -47,14 +53,14 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)
 
-	var userParams UserParams
+	var userParams CreateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&userParams); err != nil {
 		log.Error().Err(err).Msg("failed to parse params")
 		response.InternalError(w)
 		return
 	}
 
-	user, err := u.user.Create(ctx, userParams.Name)
+	user, err := u.user.Create(ctx, userParams.Name, userParams.PhoneNumber)
 	if err != nil {
 		if errors.Is(err, models.UserCreateParamInvalidNameErr) {
 			response.BadRequest(w)
@@ -95,20 +101,14 @@ func (u Users) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	id := chi.URLParam(r, "id")
 
-	var userData UserParams
+	var userData CreateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
 		log.Error().Err(err).Msg("failed to parse params")
 		response.InternalError(w)
 		return
 	}
 
-	user := models.User{
-		ID:          id,
-		Name:        userData.Name,
-		PhoneNumber: userData.PhoneNumber,
-	}
-
-	err := u.user.UpdateUser(ctx, user)
+	user, err := u.user.UpdateUser(ctx, id, userData.Name, userData.PhoneNumber)
 	if err != nil {
 		if errors.Is(err, models.NotFoundErr) {
 			response.NotFound(w)

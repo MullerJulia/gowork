@@ -35,12 +35,12 @@ func TestIntegrationStorage_Create(t *testing.T) {
 	t.Run("succes", func(t *testing.T) {
 		s := Storage{db: db}
 
-		usr, err := s.Create(ctx, "mike")
+		usr, err := s.Create(ctx, "mike", "123")
 		require.NoError(t, err)
 
 		dbUser := models.User{}
-		row := db.QueryRowContext(ctx, "SELECT id, name FROM users WHERE id=?", usr.ID)
-		err = row.Scan(&dbUser.ID, &dbUser.Name)
+		row := db.QueryRowContext(ctx, "SELECT id, name, phone_number FROM users WHERE id=?", usr.ID)
+		err = row.Scan(&dbUser.ID, &dbUser.Name, &dbUser.PhoneNumber)
 		require.NoError(t, err)
 
 		assert.Equal(t, usr, dbUser)

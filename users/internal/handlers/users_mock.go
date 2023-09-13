@@ -19,13 +19,13 @@ var _ UsersService = &UsersServiceMock{}
 //
 //		// make and configure a mocked UsersService
 //		mockedUsersService := &UsersServiceMock{
-//			CreateFunc: func(ctx context.Context, name string) (models.User, error) {
+//			CreateFunc: func(ctx context.Context, name string, phoneNumber string) (models.User, error) {
 //				panic("mock out the Create method")
 //			},
 //			GetOneFunc: func(ctx context.Context, id string) (models.User, error) {
 //				panic("mock out the GetOne method")
 //			},
-//			UpdateUserFunc: func(ctx context.Context, user models.User) error {
+//			UpdateUserFunc: func(ctx context.Context, id string, name string, phoneNumber string) (models.User, error) {
 //				panic("mock out the UpdateUser method")
 //			},
 //		}
@@ -36,13 +36,13 @@ var _ UsersService = &UsersServiceMock{}
 //	}
 type UsersServiceMock struct {
 	// CreateFunc mocks the Create method.
-	CreateFunc func(ctx context.Context, name string) (models.User, error)
+	CreateFunc func(ctx context.Context, name string, phoneNumber string) (models.User, error)
 
 	// GetOneFunc mocks the GetOne method.
 	GetOneFunc func(ctx context.Context, id string) (models.User, error)
 
 	// UpdateUserFunc mocks the UpdateUser method.
-	UpdateUserFunc func(ctx context.Context, user models.User) error
+	UpdateUserFunc func(ctx context.Context, id string, name string, phoneNumber string) (models.User, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -52,6 +52,8 @@ type UsersServiceMock struct {
 			Ctx context.Context
 			// Name is the name argument value.
 			Name string
+			// PhoneNumber is the phoneNumber argument value.
+			PhoneNumber string
 		}
 		// GetOne holds details about calls to the GetOne method.
 		GetOne []struct {
@@ -64,8 +66,12 @@ type UsersServiceMock struct {
 		UpdateUser []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// User is the user argument value.
-			User models.User
+			// ID is the id argument value.
+			ID string
+			// Name is the name argument value.
+			Name string
+			// PhoneNumber is the phoneNumber argument value.
+			PhoneNumber string
 		}
 	}
 	lockCreate     sync.RWMutex
@@ -74,21 +80,23 @@ type UsersServiceMock struct {
 }
 
 // Create calls CreateFunc.
-func (mock *UsersServiceMock) Create(ctx context.Context, name string) (models.User, error) {
+func (mock *UsersServiceMock) Create(ctx context.Context, name string, phoneNumber string) (models.User, error) {
 	if mock.CreateFunc == nil {
 		panic("UsersServiceMock.CreateFunc: method is nil but UsersService.Create was just called")
 	}
 	callInfo := struct {
-		Ctx  context.Context
-		Name string
+		Ctx         context.Context
+		Name        string
+		PhoneNumber string
 	}{
-		Ctx:  ctx,
-		Name: name,
+		Ctx:         ctx,
+		Name:        name,
+		PhoneNumber: phoneNumber,
 	}
 	mock.lockCreate.Lock()
 	mock.calls.Create = append(mock.calls.Create, callInfo)
 	mock.lockCreate.Unlock()
-	return mock.CreateFunc(ctx, name)
+	return mock.CreateFunc(ctx, name, phoneNumber)
 }
 
 // CreateCalls gets all the calls that were made to Create.
@@ -96,12 +104,14 @@ func (mock *UsersServiceMock) Create(ctx context.Context, name string) (models.U
 //
 //	len(mockedUsersService.CreateCalls())
 func (mock *UsersServiceMock) CreateCalls() []struct {
-	Ctx  context.Context
-	Name string
+	Ctx         context.Context
+	Name        string
+	PhoneNumber string
 } {
 	var calls []struct {
-		Ctx  context.Context
-		Name string
+		Ctx         context.Context
+		Name        string
+		PhoneNumber string
 	}
 	mock.lockCreate.RLock()
 	calls = mock.calls.Create
@@ -146,21 +156,25 @@ func (mock *UsersServiceMock) GetOneCalls() []struct {
 }
 
 // UpdateUser calls UpdateUserFunc.
-func (mock *UsersServiceMock) UpdateUser(ctx context.Context, user models.User) error {
+func (mock *UsersServiceMock) UpdateUser(ctx context.Context, id string, name string, phoneNumber string) (models.User, error) {
 	if mock.UpdateUserFunc == nil {
 		panic("UsersServiceMock.UpdateUserFunc: method is nil but UsersService.UpdateUser was just called")
 	}
 	callInfo := struct {
-		Ctx  context.Context
-		User models.User
+		Ctx         context.Context
+		ID          string
+		Name        string
+		PhoneNumber string
 	}{
-		Ctx:  ctx,
-		User: user,
+		Ctx:         ctx,
+		ID:          id,
+		Name:        name,
+		PhoneNumber: phoneNumber,
 	}
 	mock.lockUpdateUser.Lock()
 	mock.calls.UpdateUser = append(mock.calls.UpdateUser, callInfo)
 	mock.lockUpdateUser.Unlock()
-	return mock.UpdateUserFunc(ctx, user)
+	return mock.UpdateUserFunc(ctx, id, name, phoneNumber)
 }
 
 // UpdateUserCalls gets all the calls that were made to UpdateUser.
@@ -168,12 +182,16 @@ func (mock *UsersServiceMock) UpdateUser(ctx context.Context, user models.User) 
 //
 //	len(mockedUsersService.UpdateUserCalls())
 func (mock *UsersServiceMock) UpdateUserCalls() []struct {
-	Ctx  context.Context
-	User models.User
+	Ctx         context.Context
+	ID          string
+	Name        string
+	PhoneNumber string
 } {
 	var calls []struct {
-		Ctx  context.Context
-		User models.User
+		Ctx         context.Context
+		ID          string
+		Name        string
+		PhoneNumber string
 	}
 	mock.lockUpdateUser.RLock()
 	calls = mock.calls.UpdateUser
