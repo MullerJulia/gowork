@@ -23,7 +23,22 @@ func TestService_Create(t *testing.T) {
 		want    models.User
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "success",
+			fields: fields{
+				repo: &RepositryMock{
+					CreateFunc: func(ctx context.Context, name string, phoneNumber string) (models.User, error) {
+						return models.User{ID: "1", Name: name, PhoneNumber: "123"}, nil
+					},
+				},
+			},
+			args: args{
+				name:        "name",
+				phoneNumber: "123",
+			},
+			want:    models.User{ID: "1", Name: "name", PhoneNumber: "123"},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

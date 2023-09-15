@@ -7,6 +7,7 @@ import (
 	"github.com/mikenai/gowork/internal/models"
 )
 
+//go:generate
 type Repositry interface {
 	Create(ctx context.Context, name, phoneNumber string) (models.User, error)
 	GetByID(ctx context.Context, id string) (models.User, error)
